@@ -3,6 +3,7 @@ import { trpc } from '@/utils/trpc';
 import { useState, useEffect, useCallback } from 'react';
 import { InventoryItemForm } from '@/components/InventoryItemForm';
 import { InventoryItemList } from '@/components/InventoryItemList';
+import { Button } from '@/components/ui/button';
 
 // Using type-only import for better TypeScript compliance
 import type {
@@ -15,6 +16,24 @@ function App() {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'dark' ? 'dark' : 'light';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prevTheme: 'light' | 'dark') => (prevTheme === 'light' ? 'dark' : 'light'));
+  };
 
   const loadInventoryItems = useCallback(async () => {
     setIsLoading(true);
@@ -138,13 +157,18 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto p-6 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-      <h1 className="text-4xl font-extrabold text-gray-800 mb-8 text-center drop-shadow-sm">
+    <div className="container mx-auto p-6 min-h-screen">
+      <div className="flex justify-end mb-4">
+        <Button onClick={toggleTheme} className="px-4 py-2 rounded-md">
+          {theme === 'light' ? '🌙 Dark Mode' : '☀️ Light Mode'}
+        </Button>
+      </div>
+      <h1 className="text-4xl font-extrabold text-gray-800 dark:text-gray-200 mb-8 text-center drop-shadow-sm">
         📦 Inventory Tracker 🚀
       </h1>
 
-      <div className="bg-white p-8 rounded-xl shadow-lg mb-10">
-        <h2 className="text-2xl font-bold text-gray-700 mb-6">
+      <div className="bg-card text-card-foreground p-8 rounded-xl shadow-lg mb-10">
+        <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-6">
           {editingItem ? 'Edit Inventory Item' : 'Add New Inventory Item'}
         </h2>
         <InventoryItemForm
@@ -155,14 +179,14 @@ function App() {
         />
       </div>
 
-      <div className="bg-white p-8 rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold text-gray-700 mb-6">
+      <div className="bg-card text-card-foreground p-8 rounded-xl shadow-lg">
+        <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-6">
           Current Inventory
         </h2>
         {isLoading && inventoryItems.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">Loading inventory...</p>
+          <p className="text-center text-muted-foreground py-8">Loading inventory...</p>
         ) : inventoryItems.length === 0 ? (
-          <p className="text-center text-gray-500 py-8">
+          <p className="text-center text-muted-foreground py-8">
             No items in inventory. Add one above!
           </p>
         ) : (
